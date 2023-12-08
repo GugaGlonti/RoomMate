@@ -1,5 +1,4 @@
-package de.hhu.propra.roommate;
-
+package de.hhu.propra.roommate.web.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,7 +13,7 @@ public class ControllerFirst {
         return "index";
     }
 
-    @GetMapping("/seat/{seatID}")
+    @GetMapping("/seats/{seatID}")
     String getSeat(
             @PathVariable("seatID") String seatID
     ) {

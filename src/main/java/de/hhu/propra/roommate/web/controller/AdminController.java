@@ -1,4 +1,4 @@
-package de.hhu.propra.roommate;
+package de.hhu.propra.roommate.web.controller;
 
 import de.hhu.propra.roommate.annotations.AdminOnly;
 import org.springframework.stereotype.Controller;
@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 @Controller
 public class AdminController {
 
-    @GetMapping("/seat/{seatID}/edit")
+    @GetMapping("/seats/{seatID}/edit")
     @AdminOnly
     String GETeditSeat(
             @PathVariable("seatID") String seatID,

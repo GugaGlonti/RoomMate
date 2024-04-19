@@ -1,18 +1,41 @@
-
-<nav class="bg-warning">
+<nav>
+  <div class="bg-warning">
     <div class="d-flex justify-content-between m-auto py-4 w-75">
 
-        <div>
-            <a href="/" style="text-decoration: none">
-                <h1 class="text-danger">RoomMate</h1>
-            </a>
+      <div>
+        <a href="/" style="text-decoration: none">
+          <h1 class="text-danger">RoomMate</h1>
+        </a>
+      </div>
+
+      <div>
+        <div th:unless="${loggedIn}">
+          <form th:action="@{/oauth2/authorization/github}">
+            <input class="btn btn-dark" type="submit" value="Login using GitHub">
+          </form>
         </div>
 
-        <div>
-            <a href="/logout" style="text-decoration: none">
-                <h1 class="text-danger">LogOut</h1>
-            </a>
-        </div>
+        <div th:if="${loggedIn}" class="d-flex gap-4 align-items-center">
+          <a th:if="${admin}" th:href="@{/admin}" class="btn btn-outline-danger">
+            <span class="h3">Go To Admin Page</span>
+          </a>
 
+          <a th:href="@{/{username}(username=${userName})}"
+             class="border-0 bg-transparent text-decoration-none text-black">
+            <span th:text="${userName}" class="h3">Authenticated User</span>
+          </a>
+
+          <form th:action="@{/logout}" method="post">
+            <input class="btn btn-dark" type="submit" value="Logout">
+          </form>
+        </div>
+      </div>
     </div>
+
+    <div th:unless="${error == null}">
+      <div class="alert alert-danger alert-dismissible fade show  text-center" role="alert">
+        <strong th:text="${error}">Error</strong>
+      </div>
+    </div>
+  </div>
 </nav>

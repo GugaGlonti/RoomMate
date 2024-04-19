@@ -1,14 +1,28 @@
+import com.github.spotbugs.snom.Effort
+
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.1.5'
-    id 'io.spring.dependency-management' version '1.1.3'
+    id 'org.springframework.boot' version '3.2.0'
+    id 'io.spring.dependency-management' version '1.1.4'
+    id "com.github.spotbugs" version "6.0.5"
 }
 
 group = 'de.hhu.propra'
 version = '0.0.1-SNAPSHOT'
 
 java {
-    sourceCompatibility = '17'
+    sourceCompatibility = '21'
+}
+
+spotbugs {
+    effort = Effort.MAX
+}
+
+spotbugsMain {
+    reports {
+        xml.enabled = false
+        html.enabled = true
+    }
 }
 
 repositories {
@@ -16,18 +30,45 @@ repositories {
 }
 
 dependencies {
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    // security
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     implementation 'org.springframework.boot:spring-boot-starter-security'
-    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    // web
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation group: 'org.springframework', name: 'spring-webflux', version: '6.1.4'
+
+
+    // validation and sanitization
+    implementation group: 'jakarta.validation', name: 'jakarta.validation-api', version: '3.0.2'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-validation', version: '3.2.2'
+
+
+    // jdbc
+    implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+    // implementation 'org.springframework.data:spring-data-jpa:3.2.2'
+    runtimeOnly 'org.postgresql:postgresql'
+    testRuntimeOnly 'com.h2database:h2'
+
+    // migration
+    implementation 'org.flywaydb:flyway-core'
+
+    // test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
-}
+    testImplementation group: 'com.tngtech.archunit', name: 'archunit-junit5', version: '1.2.0'
+    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.25.3'
 
-tasks.named('bootBuildImage') {
-    builder = 'paketobuildpacks/builder-jammy-base:latest'
+    // lombok
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.30'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
 }
 
 tasks.named('test') {

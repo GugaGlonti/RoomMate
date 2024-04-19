@@ -1,5 +1,8 @@
-
 spring:
+  datasource:
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    url: jdbc:postgresql://0.0.0.0:5432/postgres
   security:
     oauth2:
       client:

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Seat Selection</title>
+  <link th:href="@{/css/bootstrap.min.css}" href="../static/css/bootstrap.min.css" rel="stylesheet"
+        type="text/css">
+</head>
+<body>
+
+<div th:insert="~{fragments/navigation.html :: nav}"></div>
+
+<main class="d-flex flex-column gap-5 my-5">
+
+  <div class="container">
+    <a th:href="@{/rooms}" class="text-decoration-none"><h6>< Back To Room List</h6></a>
+    <div class="d-flex justify-content-between align-items-center">
+      <h2>Room <span th:text="${room.getName()}">No Room Name</span></h2>
+      <div th:if="${admin}">
+        <a th:unless="${editing}" th:href="@{/rooms/{roomID}(roomID=${room.getId()},editing=true)}"
+           class="btn btn-outline-danger text-center">Edit</a>
+        <a th:if="${editing}" th:href="@{/rooms/{roomID}(roomID=${room.getId()},editing=false)}"
+           class="btn btn-outline-danger text-center">Stop Editing</a>
+      </div>
+    </div>
+  </div>
+
+  <div th:if="${editing}" class="container">
+    <h3 class="text-center">Add Seat</h3>
+    <form th:action="@{/rooms/{roomID}/addSeat}" method="post"
+          class="d-flex justify-content-between align-items-center p-2 border">
+
+      <div class="d-flex flex-column gap-1">
+        <label for="seatName" class="mx-2">Name</label>
+        <input type="text" class="form-control" id="seatName" name="seatName"
+               placeholder="Seat Name">
+      </div>
+
+      <label for="equipment" class="mx-2">Equipment</label>
+      <select id="equipment" class="form-control" multiple name="equipment" style="height: 5rem">
+        <option th:each="option : ${equipmentOptions}" th:value="${option}" th:text="${option}">
+          Equipment Option
+        </option>
+      </select>
+
+      <input hidden name="roomId" th:value="${room.getId()}">
+
+      <button type="submit" class="btn btn-primary text-center">Add</button>
+    </form>
+  </div>
+
+  <div class="container">
+    <h3>Seats</h3>
+    <ul class="list-unstyled d-flex flex-column gap-3">
+
+      <li th:if="${room.hasNoSeats()}" class="d-flex justify-content-center align-items-center"
+          style="height: 40vh">
+        <h1 class="text-danger">This Room Has No Available Seats</h1>
+      </li>
+
+      <li th:each="seat : ${room.getSeats()}">
+        <div class="d-flex justify-content-between align-items-center">
+
+          <a th:href="@{/seats/{seatID}(seatID=${seat.getId()})}"
+             class="text-black text-decoration-none border list-group-item-action p-3 d-flex align-items-center"
+             th:classappend="${highLightedSeats.contains(seat.getId()) ? 'border-success border-3' : ''}">
+            <span th:text="${seat.getName()}" style="width: 16rem">Seat Name</span>
+            <ul class="list-unstyled d-flex gap-3">
+              <li th:if="${seat.hasNoEquipment()}">
+                <span class="px-2 text-danger">No Equipment</span>
+              </li>
+              <li th:each="equipment : ${seat.getEquipment()}"
+                  class="border rounded-pill d-flex align-items-center justify-content-center p-2">
+                <span class="text-muted" th:text="${equipment.toString()}"></span>
+              </li>
+            </ul>
+          </a>
+
+          <form th:if="${editing}" th:action="@{/seats/{seatID}/delete(seatID=${seat.getId()})}"
+                method="post" class="ms-4">
+            <button class="btn btn-outline-danger text-center">Remove Seat</button>
+          </form>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+</main>
+
+<div th:insert="~{fragments/footer.html :: footer}"></div>
+
+</body>
+</html>

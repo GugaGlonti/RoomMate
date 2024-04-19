@@ -1,19 +1,229 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Seat Details</title>
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css"
-          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
-          crossorigin="anonymous">
+  <meta charset="UTF-8">
+  <title>Seat Details</title>
+  <link th:href="@{/css/bootstrap.min.css}" href="../static/css/bootstrap.min.css" rel="stylesheet"
+        type="text/css">
 </head>
 <body>
 
-    <div th:insert="~{fragments/navigation.html :: nav}"></div>
+<div th:insert="~{fragments/navigation.html :: nav}"></div>
 
-    <h1>Seat</h1>
-    <h3><span th:text="${seatID}">Seat ID</span></h3>
+<main class="d-flex flex-column gap-5 my-5">
+
+  <div class="container">
+    <a th:href="@{/rooms/{roomID}(roomID=${room.getId()})}" class="text-decoration-none"><h6>< Back
+      To Room <span th:text="${room.getName()}">No Room Name</span></h6></a>
+    <div class="d-flex justify-content-between align-items-center">
+      <h2 class="me-5">Seat <span th:text="${seat.getName()}">No Seat Name</span></h2>
+      <div th:if="${admin}">
+        <a th:unless="${editing}" th:href="@{/seats/{seatID}(seatID=${seat.getId()},editing=true)}"
+           class="btn btn-outline-danger text-center">Edit</a>
+        <a th:if="${editing}" th:href="@{/seats/{seatID}(seatID=${seat.getId()},editing=false)}"
+           class="btn btn-outline-danger text-center">Stop Editing</a>
+      </div>
+    </div>
+    <ul class="d-flex list-unstyled gap-2">
+      <li th:if="${seat.hasNoEquipment()}"
+          class="border rounded-pill d-flex align-items-center justify-content-center p-2">
+        <span class="text-muted">No Equipment</span>
+      </li>
+      <li th:each="equipment : ${seat.getEquipment()}"
+          class="border rounded-pill d-flex align-items-center justify-content-center p-2">
+        <span class="text-muted" th:text="${equipment.toString()}"></span>
+      </li>
+    </ul>
+  </div>
+
+  <div th:if="${editing}" class="container d-flex justify-content-between gap-5">
+    <form class="d-flex justify-content-between gap-5 p-5 border rounded-2" th:action="@{/lock}"
+          method="post">
+      <div class="text-danger">
+        <p>Add A Lock For A Certain Period</p>
+        <p>Locks Will Delete <br/> Overlapping Reservations !</p>
+      </div>
+
+      <div class="d-flex gap-5 flex-column">
+        <div class="form-group">
+          <label for="lockStartDate">Start Date</label>
+          <input required id="lockStartDate" type="date" class="form-control form-control-sm"
+                 name="lockStartDate">
+        </div>
+
+        <div class="form-group">
+          <label for="lockStartTime">Start Time</label>
+          <input required id="lockStartTime" type="time" class="form-control form-control-sm"
+                 name="lockStartTime">
+        </div>
+      </div>
+
+      <div class="d-flex gap-5 flex-column">
+        <div class="form-group">
+          <label for="lockEndDate">End Date</label>
+          <input required id="lockEndDate" type="date" class="form-control form-control-sm"
+                 name="lockEndDate">
+        </div>
+
+        <div class="form-group">
+          <label for="lockEndTime">End Time</label>
+          <input required id="lockEndTime" type="time" class="form-control form-control-sm"
+                 name="lockEndTime">
+        </div>
+
+      </div>
+
+      <input hidden name="username" th:value="${userName}">
+      <input hidden name="seatId" th:value="${seat.getId()}">
+      <input hidden name="roomId" th:value="${room.getId()}">
+
+      <button class="btn btn-outline-danger text-center">Add Lock</button>
+    </form>
+
+    <form class="d-flex justify-content-between gap-5 p-5 border rounded-2"
+          th:action="@{/seats/{seatID}/update(seatID=${seatID})}" method="post">
+      <div class="d-flex gap-5">
+        <div class="form-group">
+          <label for="equipment" class="mx-2">Equipment</label>
+          <select id="equipment" class="form-control h-75" multiple name="equipment"
+                  style="height: 5rem">
+            <option th:each="option : ${equipmentoptions}" th:value="${option}" th:text="${option}"
+                    th:selected="${#lists.contains(seat.getEquipment(), option)}">Equipment Option
+            </option>
+          </select>
+          <input hidden name="roomId" th:value="${room.getId()}">
+        </div>
+      </div>
+      <button class="btn btn-outline-danger text-center">Update Seat Equipment</button>
+    </form>
+  </div>
+
+  <div class="container">
+    <div class="d-flex justify-content-between mb-5">
+      <h4>Reservations</h4>
+      <a th:if="${!reserving}"
+         th:href="@{/seats/{seatID}(seatID=${seat.getId()},reserving=true,editing=${editing})}"
+         class="btn btn-outline-primary text-center">+ Add Reservation</a>
+      <a th:if="${reserving}"
+         th:href="@{/seats/{seatID}(seatID=${seat.getId()},reserving=false,editing=${editing})}"
+         class="btn btn-outline-danger text-center">Cancel Reservation</a>
+    </div>
+
+    <div th:if="${reserving}" class="mb-5">
+      <form class="d-flex justify-content-between p-5 border rounded-2" th:action="@{/reserve}"
+            method="post">
+        <div class="d-flex gap-5">
+          <div class="form-group">
+            <label for="startDate">Start Date</label>
+            <input required id="startDate" type="date" class="form-control form-control-sm"
+                   name="startDate">
+          </div>
+
+          <div class="form-group">
+            <label for="startTime">Start Time</label>
+            <input required id="startTime" type="time" class="form-control form-control-sm"
+                   name="startTime">
+          </div>
+
+          <div class="form-group">
+            <label for="endDate">End Date</label>
+            <input required id="endDate" type="date" class="form-control form-control-sm"
+                   name="endDate">
+          </div>
+
+          <div class="form-group">
+            <label for="endTime">End Time</label>
+            <input required id="endTime" type="time" class="form-control form-control-sm"
+                   name="endTime">
+          </div>
+
+        </div>
+
+        <input hidden name="username" th:value="${userName}">
+        <input hidden name="seatId" th:value="${seat.getId()}">
+        <input hidden name="roomId" th:value="${room.getId()}">
+
+        <button class="btn btn-outline-primary text-center">Add Reservation</button>
+      </form>
+    </div>
+
+    <div th:if="${seat.hasNoReservations()}"
+         class="d-flex justify-content-center align-items-center" style="height: 40vh">
+      <h1 class="text-danger">This Seat Has No Reservations</h1>
+    </div>
+
+    <ul class="list-unstyled d-flex flex-column gap-3">
+      <li th:each="reservation : ${seat.getReservations()}">
+        <div class="d-flex justify-content-between align-items-center">
+
+          <a th:unless="${reservation.getIsLock()}"
+             th:href="@{/seats/{seatID}(seatID=${seat.getId()})}"
+             class="text-black text-decoration-none list-group-item list-group-item-action p-3 d-flex justify-content-between">
+            <span th:text="${reservation.getUsername()}">Reservation User</span>
+            <div>
+              <span th:text="${reservation.getStartDateString()}">Reservation Start Time</span>
+              <span> to </span>
+              <span th:text="${reservation.getEndDateString()}">Reservation End Time</span>
+            </div>
+            <span th:if="${reservation.getFrozen()}" class="text-danger">This Reservation Has Been Frozen</span>
+            <span th:text="${reservation.getSeatId()}" class="text-primary">Seat ID</span>
+          </a>
+
+          <a th:if="${reservation.getIsLock()}" th:href="@{/seats/{seatID}(seatID=${seat.getId()})}"
+             class="text-black text-decoration-none list-group-item list-group-item-action p-3 d-flex justify-content-between border-danger">
+            <span class="text-danger">This Seat Has Been Locked From</span>
+            <span class="text-danger"><span th:text="${reservation.getStartDateString()}">Reservation Start Time</span> until <span
+                th:text="${reservation.getEndDateString()}">Reservation End Time</span></span>
+            <span class="text-danger">By Admin <span th:text="${reservation.getUsername()}">No Admin Name</span></span>
+            <span class="text-primary" th:text="${reservation.getSeatId()}">Seat ID</span>
+          </a>
+
+
+          <div th:unless="${editing}">
+            <form th:if="${reservation.getUsername() == userName}"
+                  th:action="@{/cancel(reservationId=${reservation.getId()},roomId=${room.getId},seatId=${seat.getId})}"
+                  method="post" class="ms-4">
+              <button th:unless="${reservation.getIsLock()}"
+                      class="btn btn-outline-primary text-center">Remove Reservation
+              </button>
+              <button th:if="${reservation.getIsLock()}" class="btn btn-outline-danger text-center">
+                Remove Lock
+              </button>
+            </form>
+          </div>
+
+          <div th:if="${editing}" class="d-flex">
+            <div th:unless="${reservation.getIsLock()}" class="d-flex">
+              <form
+                  th:action="@{/freeze(reservationId=${reservation.getId()},roomId=${reservation.getRoomId()},seatId=${reservation.getSeatId()})}"
+                  method="post" class="ms-4">
+                <button class="btn btn-outline-danger text-center">
+                  <span th:if="${reservation.getFrozen()}">Unfreeze Reservation</span>
+                  <span th:unless="${reservation.getFrozen()}">Freeze Reservation</span>
+                </button>
+              </form>
+              <form
+                  th:action="@{/cancel(reservationId=${reservation.getId()},roomId=${room.getId},seatId=${seat.getId})}"
+                  method="post" class="ms-4">
+                <button class="btn btn-outline-danger text-center">Remove Reservation</button>
+              </form>
+            </div>
+            <div th:if="${reservation.getIsLock()}">
+              <form
+                  th:action="@{/cancel(reservationId=${reservation.getId()},roomId=${room.getId},seatId=${seat.getId})}"
+                  method="post" class="ms-4">
+                <button class="btn btn-outline-danger text-center">Remove Lock</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+</main>
+
+<div th:insert="~{fragments/footer.html :: footer}"></div>
 
 </body>
 </html>
